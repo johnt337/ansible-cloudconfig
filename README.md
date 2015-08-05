@@ -34,4 +34,12 @@ ansible-test-module -m ./cloudconfig_user.py
 
 ```
 
+- Usage ``` cloudconfig --help ```
 
+
+TODO
+----
+
+- Finish remaining units
+- Only write the populated keys
+- Finish test cases
