@@ -121,6 +121,8 @@ class CloudConfig_User(object):
     def __init__(self, module):
         self.module              = module
         self.state               = module.params['state']
+        self.src                 = module.params['src']
+        self.dest                = module.params['dest']
         self.name                = module.params['name']
         self.force               = module.params['force']
         self.groups              = module.params['groups']
@@ -146,6 +148,14 @@ class CloudConfig_User(object):
         cmd.append("-action")
         cmd.append("remove")
         
+        if self.src is not None:
+            cmd.append('-src')
+            cmd.append(self.src)
+
+        if self.dest is not None:
+            cmd.append('-dest')
+            cmd.append(self.dest)
+
         cmd.append(self.name)
         return self.execute_command(cmd)
 
@@ -155,6 +165,14 @@ class CloudConfig_User(object):
         cmd.append("users")
         cmd.append("-action")
         cmd.append("add")
+
+        if self.src is not None:
+            cmd.append('-src')
+            cmd.append(self.src)
+
+        if self.dest is not None:
+            cmd.append('-dest')
+            cmd.append(self.dest)
 
         if self.groups is not None and len(self.groups):
             groups = self.get_groups_set()
@@ -179,6 +197,14 @@ class CloudConfig_User(object):
         cmd.append('update')
 
         info = self.user_info()
+
+        if self.src is not None:
+            cmd.append('-src')
+            cmd.append(self.src)
+
+        if self.dest is not None:
+            cmd.append('-dest')
+            cmd.append(self.dest)
 
         if self.force:
             cmd.append('-force')
@@ -212,6 +238,15 @@ class CloudConfig_User(object):
             cmd.append('users')
             cmd.append('-action')
             cmd.append('view')
+
+            if self.src is not None:
+                cmd.append('-src')
+                cmd.append(self.src)
+
+            if self.dest is not None:
+                cmd.append('-dest')
+                cmd.append(self.dest)
+
             cmd.append(self.name)
             (rc,out,err) = self.execute_command(cmd)
             if rc == 0:
@@ -266,6 +301,8 @@ def main():
             name=dict(required=True, aliases=['user'], type='str'),
             force=dict(default=False, type='bool'),
             groups=dict(default=None, type='str'),
+            src=dict(default="/etc/configdrive/cloud-config.yml", type='str'),
+            dest=dict(default="/etc/configdrive/cloud-config.yml", type='str'),
             update_password=dict(default='always',choices=['always','on_create'],type='str'),
             password=dict(default=None, type='str'),
             # following are specific to ssh key generation
