@@ -30,6 +30,6 @@ ansible-test-module='~/gitroot/ansible/hacking/test-module'
 
 ```
 
-ansible-test-module -m ./cloudconfig_user.py 
+ansible-test-module -m ./cloudconfig_user.py -a "name=test password=foobar groups=johnt,test,one ssh_authorized_keys=barfoo"
 
 ```

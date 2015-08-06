@@ -71,7 +71,7 @@ options:
 '''
 
 EXAMPLES = '''
-# Add the user 'johnd' without password login and groups of 'admin'
+# Add the user 'johnd' without password and groups of 'admin'
 - user: name=johnd password="*" groups=admin
 
 # Add the user 'james' with a bash shell, appending the group 'admins' and 'developers' to the user's groups
@@ -316,7 +316,7 @@ def main():
             groups=dict(default=None, type='str'),
             password=dict(default=None, type='str'),
             # following are specific to ssh key generation
-            authorized_ssh_keys=dict(aliases=['sshkeys'], default=None, type='str'),
+            ssh_authorized_keys=dict(aliases=['sshkeys'], default=None, type='str'),
             update_password=dict(default='always',choices=['always','on_create'],type='str'),
         ),
         supports_check_mode=True
