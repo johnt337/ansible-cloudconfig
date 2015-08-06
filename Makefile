@@ -5,10 +5,11 @@ MAKEFLAGS  += --no-builtin-rules
 
 SRC   ?= $(shell find . -name '*.py')
 ARGS  ?= -v -race
-PROJ  ?= github.com/johnt337/ansible-cloudconfig
+PROJ  ?= ansible-cloudconfig
 DEP   ?= github.com/johnt337/cloudconfig
 MOUNT ?= $(shell pwd)
 DEP_MOUNT ?= "$(shell pwd)/../cloudconfig"
+ANSIBLE ?= /Users/johnt/gitroot/ansible
 
 clean:
 	@echo "running make clean"
@@ -19,7 +20,7 @@ distclean:
 
 interactive:
 	@echo "running make interactive"
-	docker run -it --rm --name cloudconfig-build -v /var/run:/var/run -v $(DEP_MOUNT):/go/src/$(DEP) -v $(MOUNT):/go/src/$(PROJ) -v /Users/johnt/gitroot/ansible:/ansible --entrypoint=/bin/bash -i cloudconfig 
+	docker run -it --rm --name cloudconfig-build -v /var/run:/var/run -v $(MOUNT):/workspace/$(PROJ) -v $(DEP_MOUNT):/go/src/$(DEP) -v $(ANSIBLE):/ansible --entrypoint=/bin/bash -i cloudconfig 
 
 lint: $(SRC)
 	@echo "running lint"
