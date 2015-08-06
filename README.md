@@ -13,8 +13,8 @@ chmod +x ansible/hacking/test-module
 - Add these two lines to your ```~/.bash_profile``` or ```~/.zshrc```
 
 ```
-ansible-dev-init='cd ~/gitroot/ansible && source ./hacking/env-setup && cd ~-'
-ansible-test-module='~/gitroot/ansible/hacking/test-module'
+alias ansible-dev-init='cd ~/gitroot/ansible && source ./hacking/env-setup && cd ~-'
+alias ansible-test-module='~/gitroot/ansible/hacking/test-module'
 
 ```
 
