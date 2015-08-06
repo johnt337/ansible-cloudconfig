@@ -33,6 +33,10 @@ options:
         aliases: [ "user" ]
         description:
             - Name of the user to create, remove or modify.
+    force:
+        required: false
+        description:
+            - Force the update action to overwrite the entire user entry.
     groups:
         required: false
         description:
@@ -85,19 +89,11 @@ EXAMPLES = '''
 '''
 
 import os
-import pwd
-import grp
 import syslog
 import platform
 import socket
 import time
-
-try:
-    import spwd
-    HAVE_SPWD=True
-except:
-    HAVE_SPWD=False
-
+import json
 
 class CloudConfig_User(object):
     """
@@ -126,6 +122,7 @@ class CloudConfig_User(object):
         self.module              = module
         self.state               = module.params['state']
         self.name                = module.params['name']
+        self.force               = module.params['force']
         self.groups              = module.params['groups']
         self.password            = module.params['password']
         self.ssh_authorized_keys = module.params['ssh_authorized_keys']
@@ -146,29 +143,31 @@ class CloudConfig_User(object):
         cmd = [self.module.get_bin_path('cloudconfig', True)]
 
         cmd.append("users")
-        cmd.append("-action=remove")
+        cmd.append("-action")
+        cmd.append("remove")
+        
         cmd.append(self.name)
-
         return self.execute_command(cmd)
 
     def create_user_useradd(self, command_name='cloudconfig'):
         cmd = [self.module.get_bin_path(command_name, True)]
 
         cmd.append("users")
-        cmd.append("-action=add")
+        cmd.append("-action")
+        cmd.append("add")
 
         if self.groups is not None and len(self.groups):
             groups = self.get_groups_set()
-            cmd.append('-groups=')
+            cmd.append('-groups')
             cmd.append(','.join(groups))
 
         if self.password is not None:
-            cmd.append('-passwd=')
+            cmd.append('-passwd')
             cmd.append(self.password)
 
         if self.ssh_authorized_keys is not None:
-            cmd.append('-ssh-authorized-keys=')
-            cmd.append(self.ssh_authorized_keys)
+            cmd.append('-ssh-authorized-keys')
+            cmd.append(','.join(self.ssh_authorized_keys))
 
         cmd.append(self.name)
         return self.execute_command(cmd)
@@ -176,35 +175,26 @@ class CloudConfig_User(object):
     def modify_user_usermod(self):
         cmd = [self.module.get_bin_path('cloudconfig', True)]
         cmd.append('users')
+        cmd.append('-action')
+        cmd.append('update')
 
         info = self.user_info()
 
+        if self.force:
+            cmd.append('-force')
+            cmd.append(self.force)
+
         if self.groups is not None:
-            current_groups = self.user_group_membership()
-            groups_need_mod = False
-            groups = []
+            cmd.append('-groups')
+            cmd.append(','.join(self.groups))
 
-            if self.groups == '':
-                if current_groups:
-                    groups_need_mod = True
-            else:
-                groups = self.get_groups_set(remove_existing=False)
-                group_diff = set(current_groups).symmetric_difference(groups)
-
-                if group_diff:
-                    groups_need_mod = True
-
-            if groups_need_mod:
-                cmd.append('-groups=')
-                cmd.append(','.join(groups))
-
-        if self.update_password == 'always' and self.password is not None and info[1] != self.password:
-            cmd.append('-password=')
+        if self.update_password == 'always' and self.password is not None and info["PasswordHash"] != self.password:
+            cmd.append('-passwd')
             cmd.append(self.password)
 
         if self.ssh_authorized_keys is not None:
-            cmd.append('-ssh-authorized-keys=')
-            cmd.append(self.ssh_authorized_keys)
+            cmd.append('-ssh-authorized-keys')
+            cmd.append(','.join(self.ssh_authorized_keys))
 
         # skip if no changes to be made
         if len(cmd) == 1:
@@ -213,85 +203,46 @@ class CloudConfig_User(object):
             return (0, '', '')
 
         cmd.append(self.name)
-        return self.execute_command(cmd)
-
-    def group_exists(self,group):
-        try:
-            # Try group as a gid first
-            grp.getgrgid(int(group))
-            return True
-        except (ValueError, KeyError):
-            try:
-                grp.getgrnam(group)
-                return True
-            except KeyError:
-                return False
-
-    def group_info(self, group):
-        if not self.group_exists(group):
-            return False
-        try:
-            # Try group as a gid first
-            return list(grp.getgrgid(int(group)))
-        except (ValueError, KeyError):
-            return list(grp.getgrnam(group))
-
-    def get_groups_set(self, remove_existing=True):
-        if self.groups is None:
-            return None
-        info = self.user_info()
-        groups = set(filter(None, self.groups.split(',')))
-        for g in set(groups):
-            if not self.group_exists(g):
-                self.module.fail_json(msg="Group %s does not exist" % (g))
-            if info and remove_existing and self.group_info(g)[2] == info[3]:
-                groups.remove(g)
-        return groups
-
-    def user_group_membership(self):
-        groups = []
-        info = self.get_pwd_info()
-        for group in grp.getgrall():
-            if self.name in group.gr_mem and not info[3] == group.gr_gid:
-                groups.append(group[0])
-        return groups
+        (rc,out,err) = self.execute_command(cmd)
+        return (rc,out,err)
 
     def user_exists(self):
         try:
-            if pwd.getpwnam(self.name):
+            cmd = [self.module.get_bin_path('cloudconfig', True)]
+            cmd.append('users')
+            cmd.append('-action')
+            cmd.append('view')
+            cmd.append(self.name)
+            (rc,out,err) = self.execute_command(cmd)
+            if rc == 0:
                 return True
+            else:
+                # self.module.fail_json(msg="User %s does not exist" % (self.name))
+                return False
         except KeyError:
             return False
 
     def get_pwd_info(self):
         if not self.user_exists():
             return False
-        return list(pwd.getpwnam(self.name))
+
+        cmd = [self.module.get_bin_path('cloudconfig', True)]
+        cmd.append('users')
+        cmd.append('-action')
+        cmd.append('view')
+        
+        cmd.append(self.name)
+        (rc,out,err) = self.execute_command(cmd)
+
+        info = json.loads(out)
+        return info
+
 
     def user_info(self):
         if not self.user_exists():
             return False
         info = self.get_pwd_info()
-        if len(info[1]) == 1 or len(info[1]) == 0:
-            info[1] = self.user_password()
         return info
-
-    def user_password(self):
-        passwd = ''
-        if HAVE_SPWD:
-            try:
-                passwd = spwd.getspnam(self.name)[1]
-            except KeyError:
-                return passwd
-        if not self.user_exists():
-            return passwd
-        elif self.CLOUDCONFIG:
-            # Read shadow file for user's encrypted password string
-            if os.path.exists(self.CLOUDCONFIG) and os.access(self.CLOUDCONFIG, os.R_OK):
-                for line in open(self.CLOUDCONFIG).readlines():
-                    if line.startswith('%s:' % self.name):
-                        passwd = line.split(':')[1]
-        return passwd
 
     def create_user(self):
         # by default we use the create_user_useradd method
@@ -313,11 +264,12 @@ def main():
         argument_spec = dict(
             state=dict(default='present', choices=['present', 'absent'], type='str'),
             name=dict(required=True, aliases=['user'], type='str'),
+            force=dict(default=False, type='bool'),
             groups=dict(default=None, type='str'),
+            update_password=dict(default='always',choices=['always','on_create'],type='str'),
             password=dict(default=None, type='str'),
             # following are specific to ssh key generation
             ssh_authorized_keys=dict(aliases=['sshkeys'], default=None, type='str'),
-            update_password=dict(default='always',choices=['always','on_create'],type='str'),
         ),
         supports_check_mode=True
     )
@@ -340,19 +292,27 @@ def main():
         if user.user_exists():
             if module.check_mode:
                 module.exit_json(changed=True)
-            (rc, out, err) = user.remove_user()
+            (rc, out, err) = user.remove_user()    
             if rc != 0:
                 module.fail_json(name=user.name, msg=err, rc=rc)
+
+            if rc == 0 and re.match("removing", out) is not None:
+                rc = None
+            
             result['force'] = user.force
-            result['remove'] = user.remove
     elif user.state == 'present':
         if not user.user_exists():
             if module.check_mode:
                 module.exit_json(changed=True)
             (rc, out, err) = user.create_user()
+            if rc == 0 and re.match("adding", out) is not None:
+                rc = None
         else:
             # modify user (note: this function is check mode aware)
             (rc, out, err) = user.modify_user()
+            if rc == 0 and re.match("updating", out) is not None:
+                rc = None
+
         if rc is not None and rc != 0:
             module.fail_json(name=user.name, msg=err, rc=rc)
         if user.password is not None:
@@ -362,8 +322,15 @@ def main():
 
     if rc is None:
         result['changed'] = False
+    # if rc == 0 and re.match("updating user", out) is not None:
+    #     result['changed'] = True
+    # if rc == 0 and re.match("found, adding", out) is not None:
+    #     result['changed'] = True
+    # if rc == 0 and re.match("found, removing", out) is not None:
+    #     result['changed'] = True
     else:
         result['changed'] = True
+    
     if out:
         result['stdout'] = out
     if err:
