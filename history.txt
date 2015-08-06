@@ -1,0 +1,22 @@
+    1  ls
+    2  ls /ansible/
+    3  cd ../ansible-cloudconfig/
+    4  ls
+    5  more README.md
+    6  cd /ansible && source ./hacking/env-setup
+    7  ls
+    8  . /go/src/github.com/johnt337/ansible-cloudconfig/ansible.env
+    9  . /go/src/github.com/johnt337/ansible-cloudconfig/ansible.env
+   10  cd /go/src/github.com/johnt337/ansible-cloudconfig/
+   11  ansible-test-module -m ./cloudconfig_user.py -a "name=test password=foobar groups=johnt,test,one ssh_authorized_keys=barfoo"
+   12  pip install six
+   13  apt-get install -y python pip
+   14  apt-get install -y python python-pip
+   15  pip install six
+   16  ansible-test-module -m ./cloudconfig_user.py -a "name=test password=foobar groups=johnt,test,one ssh_authorized_keys=barfoo"
+   17  pip install pyyaml
+   18  ansible-test-module -m ./cloudconfig_user.py -a "name=test password=foobar groups=johnt,test,one ssh_authorized_keys=barfoo"
+   19  echo $PATH
+   20  export PATH="${PATH}:`pwd`/../cloudconfig/bin"
+   21  echo $PATH
+   22  ansible-test-module -m ./cloudconfig_user.py -a "name=test password=foobar groups=johnt,test,one ssh_authorized_keys=barfoo"
