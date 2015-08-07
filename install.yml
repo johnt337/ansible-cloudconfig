@@ -24,13 +24,19 @@
     ##
     #########################################################################################    - name: "https://circleci.com/api/v1/project/{{author}}/{{project}}"
     - name: "https://circleci.com/api/v1/project/{{author}}/{{project}}"
-      shell: "curl -X GET 'https://circleci.com/api/v1/project/{{author}}/{{project}}' | grep build_num | head -1 | awk -F{{':'}} '{print$2}' | sed -e 's/[ ,]//g'"
+      shell: "curl -s -X GET 'https://circleci.com/api/v1/project/{{author}}/{{project}}' | grep build_num | head -1 | awk -F{{':'}} '{print$2}' | sed -e 's/[ ,]//g'"
       register: build_num
 
+    - debug: msg="latest build number - {{ item }}"
+      with_items: build_num.stdout_lines
+
     - name: "https://circleci.com/api/v1/project/johnt337/cloudconfig/{{ item }}/artifacts"
-      shell: "curl -X GET 'https://circleci.com/api/v1/project/{{author}}/{{project}}/{{ item }}/artifacts' | grep bin | grep url | awk -F{{':'}} '{print$2$3}' | sed -e 's/[\",]//g'"
+      shell: "curl -s -X GET 'https://circleci.com/api/v1/project/{{author}}/{{project}}/{{ item }}/artifacts' | grep bin | grep url | awk -F{{':'}} '{print$2$3}' | sed -e 's/[\",]//g'"
       register: binary_url
       with_items: build_num.stdout_lines
+
+    - debug: msg="fetching - {{ item }}"
+      with_items: buinary_url.stdout_lines
 
     - name: "{{ binary_url }}"
       get_url: url="{{ item }}" dest="{{cloudconfig_dest}}" owner="core" group="wheel" mode=0550
