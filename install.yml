@@ -1,0 +1,49 @@
+---
+#########################################################################################
+##
+## This playbook deploys the portal dev docker environment locally
+##
+#########################################################################################
+- name: ansible-cloudconfig installer
+  hosts: core
+  vars_files:
+  vars:
+    author: johnt337
+    project: cloudconfig
+    cloudconfig_dest: /home/core/bin/cloudconfig
+    ansible_mod_dest: /home/core/library/cloudconfig_user.py
+    #########################################################################################
+    ##
+    ## Tasks to install the cloudconfig binary and this role's modules
+    ##
+    #########################################################################################
+
+  tasks:
+    #########################################################################################
+    ##
+    ## Installer Section
+    ##
+    #########################################################################################    - name: "https://circleci.com/api/v1/project/{{author}}/{{project}}"
+      command: curl -X GET "https://circleci.com/api/v1/project/{{author}}/{{project}}" | grep build_num | awk -F: '{print$2}'
+      register: build_num
+
+    - name: "https://circleci.com/api/v1/project/johnt337/cloudconfig/{{ build_num }}/artifacts"
+      command: curl -X GET "https://circleci.com/api/v1/project/{{author}}/{{project}}/{{ item }}/artifacts" | grep bin | grep url | awk -F: '{print$2}'
+      register: binary_url
+      with_items: build_num.stdout_lines
+
+    - name: "{{ binary_url }}"
+      get_url: url="{{ item }}" dest="{{cloudconfig_dest}}" owner="core" group="wheel" mode=0550
+      with_items: binary_url.stdout_lines
+
+    - name: install cloudconfig_user module
+    - local_action copy src="library/cloudconfig_user.py" dest="{{ ansible_mod_dest }}" owner="core" mode=0750
+    #########################################################################################
+    ##
+    ## Uninstaller Section
+    ##
+    #########################################################################################
+    - name: uninstall build files
+      file: path="{{cloudconfig_dest}}" state=absent
+      with_items: files
+      when: uninstall is defined

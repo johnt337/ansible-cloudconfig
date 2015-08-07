@@ -1,0 +1,8 @@
+[all:vars]
+env               = local
+ansible_ssh_user  = core
+ansible_python_interpreter="PATH=/home/core/bin:$PATH python"
+cloud_config      = "/etc/configdrive/cloud-config.yml"
+
+[core]
+docker.vm

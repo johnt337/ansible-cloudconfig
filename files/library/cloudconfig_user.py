@@ -175,11 +175,10 @@ class CloudConfig_User(object):
             cmd.append(self.dest)
 
         if self.groups is not None and len(self.groups):
-            groups = self.get_groups_set()
             cmd.append('-groups')
-            cmd.append(','.join(groups))
+            cmd.append(groups)
 
-        if self.password is not None:
+        if self.update_password == 'always' and self.password is not None:
             cmd.append('-passwd')
             cmd.append(self.password)
 
@@ -212,18 +211,20 @@ class CloudConfig_User(object):
 
         if self.groups is not None:
             cmd.append('-groups')
-            cmd.append(','.join(self.groups))
+            cmd.append(self.groups)
 
-        if self.update_password == 'always' and self.password is not None and info["PasswordHash"] != self.password:
+        if self.password is not None:
             cmd.append('-passwd')
             cmd.append(self.password)
 
         if self.ssh_authorized_keys is not None:
             cmd.append('-ssh-authorized-keys')
-            cmd.append(','.join(self.ssh_authorized_keys))
+            # keys = (os.linesep))
+            # keys = "%s" % keys
+            cmd.append(''.join(self.ssh_authorized_keys))
 
         # skip if no changes to be made
-        if len(cmd) == 1:
+        if len(cmd) == 4:
             return (None, '', '')
         elif self.module.check_mode:
             return (0, '', '')
@@ -252,12 +253,11 @@ class CloudConfig_User(object):
             if rc == 0:
                 return True
             else:
-                # self.module.fail_json(msg="User %s does not exist" % (self.name))
                 return False
         except KeyError:
             return False
 
-    def get_pwd_info(self):
+    def user_info(self):
         if not self.user_exists():
             return False
 
@@ -266,17 +266,23 @@ class CloudConfig_User(object):
         cmd.append('-action')
         cmd.append('view')
         
+        if self.src is not None:
+            cmd.append('-src')
+            cmd.append(self.src)
+
+        if self.dest is not None:
+            cmd.append('-dest')
+            cmd.append(self.dest)
+
         cmd.append(self.name)
         (rc,out,err) = self.execute_command(cmd)
-
-        info = json.loads(out)
-        return info
-
-
-    def user_info(self):
-        if not self.user_exists():
+        
+        try:
+            info = json.loads(out)
+        except:
             return False
-        info = self.get_pwd_info()
+            #self.module.fail_json(msg="Failed to parse cloudconfig output %s" % (out))
+
         return info
 
     def create_user(self):
@@ -332,9 +338,10 @@ def main():
             (rc, out, err) = user.remove_user()    
             if rc != 0:
                 module.fail_json(name=user.name, msg=err, rc=rc)
-
-            if rc == 0 and re.match("removing", out) is not None:
-                rc = None
+            if rc == 0 and re.match("not found, exiting", out) is not None:
+                result['changed'] = False    
+            elif rc == 0 and re.match("not found, exiting", out) is None:
+                result['changed'] = True    
             
             result['force'] = user.force
     elif user.state == 'present':
@@ -342,13 +349,20 @@ def main():
             if module.check_mode:
                 module.exit_json(changed=True)
             (rc, out, err) = user.create_user()
-            if rc == 0 and re.match("adding", out) is not None:
-                rc = None
+            if rc == 0 and re.match("found, exiting", out) is not None:
+                result['changed'] = False
+            elif rc == 0 and re.match("found, exiting", out) is None:
+                result['changed'] = True
+
         else:
             # modify user (note: this function is check mode aware)
+            if module.check_mode:
+                module.exit_json(changed=True)
             (rc, out, err) = user.modify_user()
-            if rc == 0 and re.match("updating", out) is not None:
-                rc = None
+            if rc == 0 and re.match("ignoring user",out) is not None:
+                result['changed'] = False
+            elif rc == 0 and re.match("updating user",out) is not None:
+                result['changed'] = True
 
         if rc is not None and rc != 0:
             module.fail_json(name=user.name, msg=err, rc=rc)
@@ -357,17 +371,14 @@ def main():
         if user.ssh_authorized_keys is not None:
             result['ssh_authorized_keys'] = 'NOT_LOGGING_KEY'
 
-    if rc is None:
-        result['changed'] = False
-    # if rc == 0 and re.match("updating user", out) is not None:
+    # if rc is None:
+    #     result['changed'] = False
+    # if rc == 0:
     #     result['changed'] = True
-    # if rc == 0 and re.match("found, adding", out) is not None:
-    #     result['changed'] = True
-    # if rc == 0 and re.match("found, removing", out) is not None:
-    #     result['changed'] = True
-    else:
-        result['changed'] = True
     
+    if rc > 0:
+        result['changed'] = False
+
     if out:
         result['stdout'] = out
     if err:

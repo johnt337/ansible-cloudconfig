@@ -1,0 +1,28 @@
+---
+galaxy_info:
+  author: johnt337
+  description: Ansible module for managing coreos-cloudinit user_data
+  company: CodingBunch
+  license: MIT
+  min_ansible_version: 1.7
+  platforms:
+    - name: Ubuntu
+      versions:
+        - precise
+        - quantal
+        - raring
+        - saucy
+        - trusty
+    - name: Debian
+      versions:
+        - wheezy
+    - name: CoreOS
+      versions:
+        - 717.3.0
+        - 758.1.0
+  categories:
+    - cloud
+    - development
+    - packaging
+dependencies: []
+version: 0.0.1
