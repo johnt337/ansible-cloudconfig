@@ -10,7 +10,7 @@
     author: johnt337
     project: cloudconfig
     cloudconfig_dest: /home/core/bin/cloudconfig
-    ansible_mod_dest: /home/core/library/cloudconfig_user.py
+    ansible_mod_dest: /usr/local/etc/ansible/library/cloudconfig_user.py
     #########################################################################################
     ##
     ## Tasks to install the cloudconfig binary and this role's modules
