@@ -36,7 +36,7 @@
       with_items: build_num.stdout_lines
 
     - debug: msg="fetching - {{ item }}"
-      with_items: buinary_url.stdout_lines
+      with_items: binary_url.stdout_lines
 
     - name: "{{ binary_url }}"
       get_url: url="{{ item }}" dest="{{cloudconfig_dest}}" owner="core" group="wheel" mode=0550
