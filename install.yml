@@ -28,7 +28,7 @@
       register: build_num
 
     - name: "https://circleci.com/api/v1/project/johnt337/cloudconfig/{{ item }}/artifacts"
-      command: "curl -X GET 'https://circleci.com/api/v1/project/{{author}}/{{project}}/{{ item }}/artifacts' | grep bin | grep url | awk -F: '{print$2$3}' | sed -e 's/[\",]//g'"
+      shell: curl -X GET 'https://circleci.com/api/v1/project/{{author}}/{{project}}/{{ item }}/artifacts' | grep bin | grep url | awk -F: '{print$2$3}' | sed -e 's/[",]//g'
       register: binary_url
       with_items: build_num.stdout_lines
 
