@@ -6,7 +6,6 @@
 #########################################################################################
 - name: ansible-cloudconfig installer
   hosts: core
-  vars_files:
   vars:
     author: johnt337
     project: cloudconfig
