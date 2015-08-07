@@ -38,7 +38,7 @@
     - debug: msg="fetching - {{ item }}"
       with_items: download_url.stdout_lines
 
-    - name: "{{ binary_url }}"
+    - name: "{{ download_url }}"
       get_url: url="{{ item }}" dest="{{cloudconfig_dest}}" owner="core" group="wheel" mode=0550
       with_items: download_url.stdout_lines
 
