@@ -24,11 +24,11 @@
     ## Installer Section
     ##
     #########################################################################################    - name: "https://circleci.com/api/v1/project/{{author}}/{{project}}"
-      command: curl -X GET "https://circleci.com/api/v1/project/{{author}}/{{project}}" | grep build_num | awk -F: '{print$2}'
+      command: curl -X GET "https://circleci.com/api/v1/project/{{author}}/{{project}}" | grep build_num | awk -F{{':'}} '{print$2}'
       register: build_num
 
     - name: "https://circleci.com/api/v1/project/johnt337/cloudconfig/{{ build_num }}/artifacts"
-      command: curl -X GET "https://circleci.com/api/v1/project/{{author}}/{{project}}/{{ item }}/artifacts" | grep bin | grep url | awk -F: '{print$2}'
+      command: curl -X GET "https://circleci.com/api/v1/project/{{author}}/{{project}}/{{ item }}/artifacts" | grep bin | grep url | awk -F{{':'}} '{print$2}'
       register: binary_url
       with_items: build_num.stdout_lines
 
