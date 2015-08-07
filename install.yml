@@ -30,7 +30,7 @@
     - debug: msg="latest build number - {{ item }}"
       with_items: build_num.stdout_lines
 
-    - name: "https://circleci.com/api/v1/project/johnt337/cloudconfig/{{ item }}/artifacts"
+    - name: "https://circleci.com/api/v1/project/{{author}}/{{project}}/{{ item }}/artifacts"
       shell: "curl -s -X GET https://circleci.com/api/v1/project/{{author}}/{{project}}/{{ item }}/artifacts | grep bin | grep url | awk -F{{':'}} '{print$2$3}' | sed -e 's/[\",]//g'"
       register: binary_url
       with_items: build_num.stdout_lines
