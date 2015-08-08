@@ -39,7 +39,7 @@
       with_items: download.stdout_lines
 
     - name: download cloudconfig binary
-      get_url: url="{{ item }}" dest="{{cloudconfig_dest}}" owner="core" group="wheel" mode=0550
+      shell: "curl -s -L -X GET '{{ item }}' > '{{cloudconfig_dest}}'
       with_items: download.stdout_lines
 
     - name: install cloudconfig_user module
