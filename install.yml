@@ -51,7 +51,7 @@
       when: uninstall is defined
 
     - name: uninstall ansible module locally
-      local_action: file path="{{ansible_mod_folder}}" state=absent recurse=true
+      local_action: file path="{{ansible_mod_folder}}" state=absent
       when: uninstall is defined
 
     - name: uninstall get_build_url.sh
