@@ -50,10 +50,10 @@
       file: path={{cloudconfig_dest}} owner="core" mode=0550
 
     - name: cloudconfig_user install folder
-      local_action: file path="{{ ansible_mod_folder }}" owner="core" mode=0750 state=directory
+      local_action: file path="{{ ansible_mod_folder }}" mode=0750 state=directory
     
     - name: install cloudconfig_user module
-      local_action: copy src="files/library/cloudconfig_user.py" dest="{{ ansible_mod_dest }}" owner="core" mode=0750
+      local_action: copy src="files/library/cloudconfig_user.py" dest="{{ ansible_mod_dest }}" mode=0550
 
     #########################################################################################
     ##
