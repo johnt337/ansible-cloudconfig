@@ -26,16 +26,35 @@ Install
 ```
   $ ansible-galaxy install johnt337.cloudconfig
 
-  (add ```library = /usr/local/etc/ansible/roles/johnt337.cloudconfig/files``` to your ansible.cfg)
-  (or use ``` --module-path=/usr/local/etc/ansible/roles/johnt337.cloudconfig/files)
+  (add 'library = /usr/local/etc/ansible/roles/johnt337.cloudconfig/files' to your ansible.cfg)
+  (or use '--module-path=/usr/local/etc/ansible/roles/johnt337.cloudconfig/files')
+```
 
-  (or run the installer)  
+- change to the cloudconfig coreos installer folder)
+
+```
   $ cd /usr/local/etc/ansible/roles/johnt337.cloudconfig
 ```
+
 - edit install inventory to point to your coreos instances
 
 ```
+  $ vi install
+```
+
+- run the installer (this will also install the module into /usr/local/etc/ansible/library locally)
+```
   $ ansible-playbook -i install install.yml
+
+
+```
+
+- as an alternative, include the role in your play
+
+```
+hosts: coreos
+roles:
+  - { role: "johnt337.cloudconfig", tags: ['cloudconfig'] }
 ```
 
 Usage
