@@ -32,7 +32,7 @@
       with_items: build_num.stdout_lines
 
     - name: get download url
-      shell: "curl -s -X GET 'https://circleci.com/api/v1/project/{{ author }}/{{ project }}/{{ item }}/artifacts' | grep bin | head -1 | grep url | awk -F{{':'}} '{print$2\"{{':'}}\"$3}' | sed -e 's/[ ,]//g'"
+      shell: "curl -s -X GET 'https://circleci.com/api/v1/project/{{ author }}/{{ project }}/{{ item }}/artifacts' | grep bin | head -1 | grep url | awk -F{{':'}} '{print$3}' | sed -e 's/[ ,]//g'"
       register: download
       with_items: build_num.stdout_lines
 
@@ -40,7 +40,7 @@
       with_items: download.stdout
 
     - name: download cloudconfig binary
-      shell: "curl -s -L -X GET {{ item }} -o '{{cloudconfig_dest}}'"
+      shell: "curl -s -L -X GET 'https://{{ item }}' -o '{{cloudconfig_dest}}'"
       args:
          creates: "{{cloudconfig_dest}}"
       with_items: download.stdout
