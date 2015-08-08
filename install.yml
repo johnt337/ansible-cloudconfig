@@ -35,9 +35,10 @@
       with_items: download.stdout
 
     - name: download cloudconfig binary
-      shell: "curl -s -L -X GET '{{ item }}' -o '{{cloudconfig_dest}}'"
-      args:
-         creates: "{{cloudconfig_dest}}"
+      # shell: "curl -s -L -X GET '{{ item }}' -o '{{cloudconfig_dest}}'"
+      get_url: url='{{ item }}' dest='{{cloudconfig_dest}}' mode=0550 owner=core group=wheel
+      # args:
+         # creates: "{{cloudconfig_dest}}"
       with_items: download.stdout
 
     - name: set permissions and ownership on cloudconfig
