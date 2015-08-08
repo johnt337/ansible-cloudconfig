@@ -46,10 +46,14 @@
     ## Uninstaller Section
     ##
     #########################################################################################
-    - name: uninstall build files
+    - name: uninstall cloudconfig binary on remote hosts
       file: path="{{cloudconfig_dest}}" state=absent
       when: uninstall is defined
 
-    - name: uninstall build files
+    - name: uninstall ansible module locally
       local_action: file path="{{ansible_mod_folder}}" state=absent recurse=true
+      when: uninstall is defined
+
+    - name: uninstall get_build_url.sh
+      file: path="/tmp/get_build_url.sh" state=absent
       when: uninstall is defined
