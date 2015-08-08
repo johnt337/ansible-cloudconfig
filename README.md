@@ -33,6 +33,23 @@ Install
   $ ansible-playbook -i install install.yml
 ```
 
+Usage
+-----
+
+- Sample Task in Role
+
+```
+- name: update user passwd in cloud-config
+  cloudconfig_user: name='{{ item.admin }}' password='{{item.password}}' ssh_authorized_keys='{{item.ssh_key}}' groups='docker,sudo,wheel' dest='/tmp/cloud-config.yml' state='{{ item.state }}'
+  with_items: users
+  when: ansible_os_family == "NA" and ansible_lsb.id == "CoreOS"
+  environment:
+    PATH: <install_location>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/bin
+  tags: ['cloudinit']
+  sudo: True
+```
+
+
 Uninstall
 ---------
 

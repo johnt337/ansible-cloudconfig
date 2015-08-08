@@ -99,7 +99,7 @@ class CloudConfig_User(object):
     """
     This is a generic CloudConfig_User manipulation class. Normally it would be subclassed
     based on platform. However we are using a golang binary under the hood, so usage is consistent.
-    Also note that this is specific to CoreOS at the moment.
+    Also note that this is specific to CoreOS-cloudinit at the moment.
 
     A subclass may wish to override the following action methods:-
       - create_user()
@@ -129,6 +129,7 @@ class CloudConfig_User(object):
         self.password            = module.params['password']
         self.ssh_authorized_keys = module.params['ssh_authorized_keys']
         self.update_password     = module.params['update_password']
+        self.validate            = module.params['validate']
 
         # select whether we dump additional debug info through syslog
         self.syslogging = False
@@ -141,7 +142,7 @@ class CloudConfig_User(object):
 
         return self.module.run_command(cmd, use_unsafe_shell=use_unsafe_shell, data=data)
 
-    def remove_user_userdel(self):
+    def remove_user_cloudconfig(self):
         cmd = [self.module.get_bin_path('cloudconfig', True)]
 
         cmd.append("users")
@@ -159,7 +160,7 @@ class CloudConfig_User(object):
         cmd.append(self.name)
         return self.execute_command(cmd)
 
-    def create_user_useradd(self, command_name='cloudconfig'):
+    def create_user_cloudconfig(self, command_name='cloudconfig'):
         cmd = [self.module.get_bin_path(command_name, True)]
 
         cmd.append("users")
@@ -189,7 +190,7 @@ class CloudConfig_User(object):
         cmd.append(self.name)
         return self.execute_command(cmd)
 
-    def modify_user_usermod(self):
+    def modify_user_cloudconfig(self):
         cmd = [self.module.get_bin_path('cloudconfig', True)]
         cmd.append('users')
         cmd.append('-action')
@@ -222,6 +223,10 @@ class CloudConfig_User(object):
             # keys = (os.linesep))
             # keys = "%s" % keys
             cmd.append(''.join(self.ssh_authorized_keys))
+
+        if validate:
+            cmd.append('-validate')
+            cmd.append(self.validate)
 
         # skip if no changes to be made
         if len(cmd) == 4:
@@ -286,16 +291,16 @@ class CloudConfig_User(object):
         return info
 
     def create_user(self):
-        # by default we use the create_user_useradd method
-        return self.create_user_useradd()
+        # by default we use the create_user_cloudconfig method
+        return self.create_user_cloudconfig()
 
     def remove_user(self):
-        # by default we use the remove_user_userdel method
-        return self.remove_user_userdel()
+        # by default we use the remove_user_cloudconfig method
+        return self.remove_user_cloudconfig()
 
     def modify_user(self):
-        # by default we use the modify_user_usermod method
-        return self.modify_user_usermod()
+        # by default we use the modify_user_cloudconfig method
+        return self.modify_user_cloudconfig()
 
 
 # ===========================================
@@ -313,6 +318,7 @@ def main():
             password=dict(default=None, type='str'),
             # following are specific to ssh key generation
             ssh_authorized_keys=dict(aliases=['sshkeys'], default=None, type='str'),
+            validate=dict(default=True, type='bool'),
         ),
         supports_check_mode=True
     )
@@ -364,12 +370,14 @@ def main():
             elif rc == 0 and re.match("updating user",out) is not None:
                 result['changed'] = True
 
-        if rc is not None and rc != 0:
-            module.fail_json(name=user.name, msg=err, rc=rc)
+        # if rc is not None and rc != 0:
+        #     module.fail_json(name=user.name, msg=err, rc=rc)
+
+        # obscure some stuff from the log
         if user.password is not None:
-            result['password'] = 'NOT_LOGGING_PASSWORD'
+            result['password'] = '**********'
         if user.ssh_authorized_keys is not None:
-            result['ssh_authorized_keys'] = 'NOT_LOGGING_KEY'
+            result['ssh_authorized_keys'] = '**********'
 
     # if rc is None:
     #     result['changed'] = False
