@@ -31,7 +31,7 @@
       with_items: build_num.stdout_lines
 
     - name: get download url
-      shell: "curl -s -X GET 'https://circleci.com/api/v1/project/{{ author }}/{{ project }}/{{ item }}/artifacts' | grep bin | head -grep url | awk -F{{':'}} '{print$2$3}' | sed -e 's/[\",]//g'"
+      shell: "curl -s -X GET 'https://circleci.com/api/v1/project/{{ author }}/{{ project }}/{{ item }}/artifacts' | grep bin | head -1 | grep url | awk -F{{':'}} '{print$2$3}' | sed -e 's/[^a-zA-Z\d\s]//g'"
       register: download
       with_items: build_num.stdout_lines
 
@@ -41,6 +41,9 @@
     - name: download cloudconfig binary
       shell: "curl -s -L -X GET '{{ item }}' > '{{cloudconfig_dest}}'"
       with_items: download.stdout_lines
+
+    - name: install cloudconfig_user module
+      local_action: copy src="library/cloudconfig_user.py" dest="{{ ansible_mod_dest }}" owner="core" mode=0750
 
     - name: install cloudconfig_user module
       local_action: copy src="library/cloudconfig_user.py" dest="{{ ansible_mod_dest }}" owner="core" mode=0750
