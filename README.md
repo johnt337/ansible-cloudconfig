@@ -15,7 +15,7 @@ on each host.
 
 
 In either case, this is repurposed version of the ansible-core users module which is
-built around ```useradd```, ```userdel```, ```usermod```, and it's ```group...``` counterparts commands.
+built around ```useradd```, ```userdel```, ```usermod```, and it's ```group...``` counterpart commands.
 Those have all been removed and replaced with cloudinit counterparts with calls to ```cloudconfig users -action ...```.
 
 
