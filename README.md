@@ -42,7 +42,7 @@ Install
   $ vi install
 ```
 
-- run the installer (this will also install the module into /usr/local/etc/ansible/library locally)
+- run the cloudconfig installer (this will also install the module into /usr/local/etc/ansible/library locally)
 ```
   $ ansible-playbook -i install install.yml
 
