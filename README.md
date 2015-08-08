@@ -1,7 +1,35 @@
 ansible-cloudconfig
 ===================
 
+Install
+-------
 
+```
+  $ ansible-galaxy install johnt337.cloudconfig
+  $ cd /usr/local/etc/ansible/roles/johnt337.cloudconfig
+```
+- edit install inventory to point to your coreos instances
+
+```
+  $ ansible-playbook -i install install.yml
+```
+
+Uninstall
+---------
+
+```
+  $ cd /usr/local/etc/ansible/roles/johnt337.cloudconfig
+```
+
+- edit install to point to your coreos instances
+
+```
+  $ ansible-playbook -i install install.yml -e uninstall=true
+  $ ansible-galaxy remove johnt337.cloudconfig
+```
+
+Hacking
+-------
 - Follow ```http://docs.ansible.com/ansible/developing_modules.html``` in a nutshell you need to:
 
 ```
