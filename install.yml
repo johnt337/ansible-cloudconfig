@@ -31,7 +31,7 @@
       with_items: build_num.stdout_lines
 
     - name: get download url
-      shell: "curl -s -X GET 'https://circleci.com/api/v1/project/{{ author }}/{{ project }}/{{ item }}/artifacts' | grep bin | head -1 | grep url | awk -F{{':'}} '{print$2$3}'ß"
+      shell: "curl -s -X GET 'https://circleci.com/api/v1/project/{{ author }}/{{ project }}/{{ item }}/artifacts' | grep bin | head -1 | grep url | awk -F{{':'}} '{print$2$3}'"
       register: download
       with_items: build_num.stdout_lines
 
