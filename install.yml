@@ -37,6 +37,7 @@
          creates: "{{cloudconfig_dest}}"
       register: download
       with_items: build_num.stdout_lines
+      sudo: True
 
     - debug: msg="fetching - {{ item }}"
       with_items: download.stdout_lines
