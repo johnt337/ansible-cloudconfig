@@ -39,11 +39,11 @@
       with_items: build_num.stdout_lines
 
     - debug: msg="fetching - {{ item }}"
-      with_items: download.stdout_lines
+      with_items: download.stdout
 
     - name: download cloudconfig binary
-      shell: "curl -s -L -X GET '{{ item }}' -o '{{cloudconfig_dest}}'"
-      with_items: download.stdout_lines
+      shell: "curl -s -L -X GET {{ item }} -o '{{cloudconfig_dest}}'"
+      with_items: download.stdout
       sudo: True
 
     - name: set permissions and ownership on cloudconfig
