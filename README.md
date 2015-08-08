@@ -25,6 +25,11 @@ Install
 
 ```
   $ ansible-galaxy install johnt337.cloudconfig
+
+  (add ```library = /usr/local/etc/ansible/roles/johnt337.cloudconfig/files``` to your ansible.cfg)
+  (or use ``` --module-path=/usr/local/etc/ansible/roles/johnt337.cloudconfig/files)
+
+  (or run the installer)  
   $ cd /usr/local/etc/ansible/roles/johnt337.cloudconfig
 ```
 - edit install inventory to point to your coreos instances
@@ -44,7 +49,7 @@ Usage
   with_items: users
   when: ansible_os_family == "NA" and ansible_lsb.id == "CoreOS"
   environment:
-    PATH: <install_location>/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/bin
+    PATH: /home/core/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/bin
   tags: ['cloudinit']
   sudo: True
 ```
