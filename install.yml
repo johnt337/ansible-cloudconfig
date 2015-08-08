@@ -24,23 +24,32 @@
     ## Installer Section
     ##
     #########################################################################################
-    - name: get latest build number
-      shell: "curl -s -X GET 'https://circleci.com/api/v1/project/{{ author }}/{{ project }}' | grep build_num | head -1 | awk -F{{':'}} '{print$2}' | sed -e 's/[ ,]//g'"
-      register: build_num
+    # - name: get latest build number
+    #   shell: "curl -s -X GET 'https://circleci.com/api/v1/project/{{ author }}/{{ project }}' | grep build_num | head -1 | awk -F{{':'}} '{print$2}' | sed -e 's/[ ,]//g'"
+    #   register: build_num
 
-    - debug: msg="latest build number - {{ item }}"
-      with_items: build_num.stdout_lines
+    # - debug: msg="latest build number - {{ item }}"
+    #   with_items: build_num.stdout_lines
+
+    # - name: get download url
+    #   shell: "curl -s -X GET 'https://circleci.com/api/v1/project/{{ author }}/{{ project }}/{{ item }}/artifacts' | grep bin | head -1 | grep url | awk -F{{':'}} '{print$3}' | sed -e 's/[ ,]//g'"
+    #   register: download
+    #   with_items: build_num.stdout_lines
+
+    # - debug: msg="fetching - {{ item }}"
+    #   with_items: download.stdout
+    - name: copy cloudconfig url generator
+      copy: src=files/get_build_url.sh dest=/tmp/get_build_url.sh owner="core" group="wheel" mode=0550
 
     - name: get download url
-      shell: "curl -s -X GET 'https://circleci.com/api/v1/project/{{ author }}/{{ project }}/{{ item }}/artifacts' | grep bin | head -1 | grep url | awk -F{{':'}} '{print$3}' | sed -e 's/[ ,]//g'"
+      command: /tmp/get_build_url.sh {{author}} {{project}}
       register: download
-      with_items: build_num.stdout_lines
 
-    - debug: msg="fetching - {{ item }}"
+    - debug: msg="downloading - {{ item }}"
       with_items: download.stdout
 
     - name: download cloudconfig binary
-      shell: "curl -s -L -X GET 'https://{{ item }}' -o '{{cloudconfig_dest}}'"
+      shell: "curl -s -L -X GET '{{ item }}' -o '{{cloudconfig_dest}}'"
       args:
          creates: "{{cloudconfig_dest}}"
       with_items: download.stdout
