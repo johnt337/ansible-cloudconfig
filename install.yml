@@ -47,7 +47,7 @@
       sudo: True
 
     - name: set permissions and ownership on cloudconfig
-      file: path={{cloudconfig_dest}} owner="core" mode=0550
+      file: path={{cloudconfig_dest}} owner="core" group="wheel" mode=0550
 
     - name: cloudconfig_user install folder
       local_action: file path="{{ ansible_mod_folder }}" mode=0750 state=directory
