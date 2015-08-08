@@ -42,11 +42,12 @@
       shell: "curl -s -L -X GET '{{ item }}' > '{{cloudconfig_dest}}'"
       with_items: download.stdout_lines
 
+    - name: set permissions and ownership on cloudconfig
+      file: path={{cloudconfig_dest}} owner="core" mode=0550
+    
     - name: install cloudconfig_user module
-      local_action: copy src="library/cloudconfig_user.py" dest="{{ ansible_mod_dest }}" owner="core" mode=0750
+      local_action: copy src="files/library/cloudconfig_user.py" dest="{{ ansible_mod_dest }}" owner="core" mode=0750
 
-    - name: install cloudconfig_user module
-      local_action: copy src="library/cloudconfig_user.py" dest="{{ ansible_mod_dest }}" owner="core" mode=0750
     #########################################################################################
     ##
     ## Uninstaller Section
