@@ -10,7 +10,8 @@
     author: johnt337
     project: cloudconfig
     cloudconfig_dest: /home/core/bin/cloudconfig
-    ansible_mod_dest: /usr/local/etc/ansible/library/cloudconfig_user.py
+    ansible_mod_folder: /usr/local/etc/ansible/library/
+    ansible_mod_dest: "{{ansible_mod_folder}}/cloudconfig_user.py"
     #########################################################################################
     ##
     ## Tasks to install the cloudconfig binary and this role's modules
@@ -31,7 +32,7 @@
       with_items: build_num.stdout_lines
 
     - name: get download url
-      shell: "curl -s -X GET 'https://circleci.com/api/v1/project/{{ author }}/{{ project }}/{{ item }}/artifacts' | grep bin | head -1 | grep url | awk -F{{':'}} '{print$2$3}'"
+      shell: "curl -s -X GET 'https://circleci.com/api/v1/project/{{ author }}/{{ project }}/{{ item }}/artifacts' | grep bin | head -1 | grep url | awk -F{{':'}} '{print$2$3}'" creates="{{cloudconfig_dest}}"
       register: download
       with_items: build_num.stdout_lines
 
@@ -44,6 +45,9 @@
 
     - name: set permissions and ownership on cloudconfig
       file: path={{cloudconfig_dest}} owner="core" mode=0550
+
+    - name: cloudconfig_user install folder
+      local_action: file path="{{ ansible_mod_folder }}" owner="core" mode=0750
     
     - name: install cloudconfig_user module
       local_action: copy src="files/library/cloudconfig_user.py" dest="{{ ansible_mod_dest }}" owner="core" mode=0750
