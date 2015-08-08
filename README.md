@@ -2,12 +2,17 @@ ansible-cloudconfig
 ===================
 
 This module is built around cloudconfig: https://github.com/johnt337/cloudconfig
+
+
+
 The ansible-galaxy role is currently to install the module on your ansible management host
 as well as the cloudconfig utility on each of your coreos instances that your ansible host is managing.
+
 
 Since its really only parsing and updating yaml with some file writing and validation, 
 it probably warrants a full rewrite in python in order to avoid installing
 on each host.
+
 
 In either case, this is repurposed version of the ansible-core users module which is
 built around ```useradd```, ```userdel```, ```usermod```, and it's ```group...``` counterparts commands.
