@@ -32,7 +32,9 @@
       with_items: build_num.stdout_lines
 
     - name: get download url
-      shell: "curl -s -X GET 'https://circleci.com/api/v1/project/{{ author }}/{{ project }}/{{ item }}/artifacts' | grep bin | head -1 | grep url | awk -F{{':'}} '{print$2$3}'" creates="{{cloudconfig_dest}}"
+      shell: "curl -s -X GET 'https://circleci.com/api/v1/project/{{ author }}/{{ project }}/{{ item }}/artifacts' | grep bin | head -1 | grep url | awk -F{{':'}} '{print$2$3}'"
+      args:
+         creates: "{{cloudconfig_dest}}"
       register: download
       with_items: build_num.stdout_lines
 
