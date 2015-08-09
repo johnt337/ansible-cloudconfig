@@ -177,7 +177,7 @@ class CloudConfig_User(object):
 
         if self.groups is not None and len(self.groups):
             cmd.append('-groups')
-            cmd.append(groups)
+            cmd.append(self.groups)
 
         if self.update_password == 'always' and self.password is not None:
             cmd.append('-passwd')

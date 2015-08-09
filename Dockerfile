@@ -22,8 +22,6 @@ RUN \
   mkdir /cloudconfig && \
   apt-get update && \
   apt-get install -y vim-tiny python-pip python-pip python-dev build-essential libyaml-dev && \
-  /usr/bin/pip install --upgrade pip && \
-  /usr/bin/pip install --upgrade virtualenv && \
-  /usr/bin/pip install pyyaml
+  pip install pyyaml six
   
 WORKDIR /workspace/ansible-cloudconfig
