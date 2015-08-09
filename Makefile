@@ -11,6 +11,11 @@ MOUNT ?= $(shell pwd)
 DEP_MOUNT ?= "$(shell pwd)/../cloudconfig"
 ANSIBLE ?= /Users/johnt/gitroot/ansible
 
+
+build-ansible/cloudconfig:
+	@echo "running make build-ansible/cloudconfig"
+	docker build -t ansible/cloudconfig -f Dockerfile .
+
 clean:
 	@echo "running make clean"
 
@@ -20,7 +25,7 @@ distclean:
 
 interactive:
 	@echo "running make interactive"
-	docker run -it --rm --name cloudconfig-build -v /var/run:/var/run -v $(MOUNT):/workspace/$(PROJ) -v $(DEP_MOUNT):/go/src/$(DEP) -v $(ANSIBLE):/ansible --entrypoint=/bin/bash -i cloudconfig 
+	docker run -it --rm --name ansible-dev -v /var/run:/var/run -v $(MOUNT):/workspace/$(PROJ) -v $(DEP_MOUNT):/go/src/$(DEP) -v $(ANSIBLE):/ansible --entrypoint=/bin/bash -i ansible/cloudconfig
 
 lint: $(SRC)
 	@echo "running lint"
