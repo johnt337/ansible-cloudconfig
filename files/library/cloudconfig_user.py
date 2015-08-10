@@ -370,8 +370,8 @@ def main():
             elif rc == 0 and re.match("updating user",out) is not None:
                 result['changed'] = True
 
-        # if rc is not None and rc != 0:
-        #     module.fail_json(name=user.name, msg=err, rc=rc)
+        if rc is not None and rc != 0:
+            module.fail_json(name=user.name, msg=err, rc=rc)
 
         # obscure some stuff from the log
         if user.password is not None:
@@ -379,10 +379,8 @@ def main():
         if user.ssh_authorized_keys is not None:
             result['ssh_authorized_keys'] = '**********'
 
-    # if rc is None:
-    #     result['changed'] = False
-    # if rc == 0:
-    #     result['changed'] = True
+    if rc is None:
+        result['changed'] = False
     
     if rc > 0:
         result['changed'] = False
