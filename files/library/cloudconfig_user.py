@@ -35,6 +35,8 @@ options:
             - Name of the user to create, remove or modify.
     force:
         required: false
+        default: false
+        choices: [ true, false]
         description:
             - Force the update action to overwrite the entire user entry.
     groups:
@@ -72,6 +74,15 @@ options:
         description:
             - Update a user with an existing password.
               By default, this B(will) overwrite an existing password
+
+    validate:
+        required: false
+        default: true
+        choices: [ true, false]
+        description:
+            - Validate the generated cloudconfig and do not overwrite if failed.
+
+
 '''
 
 EXAMPLES = '''
@@ -85,7 +96,7 @@ EXAMPLES = '''
 - user: name=johnd state=absent
 
 # Create user with SSH key for user jsmith
-- user: name=jsmith sshkeys="ssh-rsa AAAAAA..... johnt@me.com" state=present
+- user: name=jsmith sshkeys="ssh-rsa AAAAAA..... a@me.com", "ssh-rsa BBBBB..... b@me.com" state=present
 '''
 
 import os
