@@ -1,6 +1,3 @@
 # setup aliases
 alias ansible-dev-init='cd /ansible && source ./hacking/env-setup && cd ~-'
 alias ansible-test-module='/ansible/hacking/test-module'
-
-# setup environment
-ansible-dev-init

@@ -26,8 +26,9 @@ Install
 ```
   $ ansible-galaxy install johnt337.cloudconfig
 
-  (add 'library = /usr/local/etc/ansible/roles/johnt337.cloudconfig/files' to your ansible.cfg)
-  (or use '--module-path=/usr/local/etc/ansible/roles/johnt337.cloudconfig/files')
+  (add 'library = <yourpath>:/usr/local/etc/ansible/roles/johnt337.cloudconfig/files' to your ansible.cfg)
+  (or use '--module-path=<yourpath>:/usr/local/etc/ansible/roles/johnt337.cloudconfig/files')
+  (or set '$ANSIBLE_MODULE_PATH=<yourpath>:/usr/local/etc/ansible/roles/johnt337.cloudconfig/files')
 ```
 
 - change to the cloudconfig coreos installer folder)
@@ -121,3 +122,5 @@ alias ansible-test-module='~/gitroot/ansible/hacking/test-module'
 ansible-test-module -m ./files/library/cloudconfig_user.py -a "name=test password=foobar groups=johnt,test,one ssh_authorized_keys=barfoo"
 
 ```
+
+- As an alterative, you can run ```make build-ansible/cloudconfig && make interactive```. From within the container run ```. ansible.profile```

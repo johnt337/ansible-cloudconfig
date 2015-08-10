@@ -18,14 +18,16 @@ build-ansible/cloudconfig:
 
 clean:
 	@echo "running make clean"
+	docker images | grep -E '<none>' | awk '{print$$3}' | xargs docker rmi
 
 distclean:
 	@make clean
 	@echo "running make distclean"
+	docker rmi ansible/cloudconfig
 
 interactive:
 	@echo "running make interactive"
-	docker run -it --rm --name ansible-dev -v /var/run:/var/run -v $(MOUNT):/workspace/$(PROJ) -v $(DEP_MOUNT):/go/src/$(DEP) -v $(ANSIBLE):/ansible --entrypoint=/bin/bash -i ansible/cloudconfig
+	docker run -it --rm --name ansible-dev -v /var/run:/var/run -v $(MOUNT):/workspace/$(PROJ) -v $(DEP_MOUNT):/go/src/$(DEP) -v $(ANSIBLE):/ansible --entrypoint=/workspace/ansible-cloudconfig/init_ansible_env.sh -i ansible/cloudconfig
 
 lint: $(SRC)
 	@echo "running lint"
