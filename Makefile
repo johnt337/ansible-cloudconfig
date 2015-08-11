@@ -37,6 +37,7 @@ lint-check: $(SRC)
 
 test: $(SRC)
 	@echo "running test"
+	ansible-test-module -m ./files/library/cloudconfig_user.py -a "state='present' name='afoobar' passwd='$fdsfdsfsfdfdfsfd$laX2u7GGpuo7RVS.4fZgQ8.Iav7gQVbDn4NkM98kxfdsfdsfsdfl0SStGX.LI6.hmXUjafOU3hoJtUScT0FOIMtmHMa.' ssh_authorized_keys='ssh-rsa dfsffsdjfhsdNCyIs6qO6sXs/DUZcfdfsdfsfdsdfFb9UwRedNgv67FQI3iaIXRALuqRNBqGgnST9/i1GFmd8yKkjMwojsCyqn5sjCrnRoNrgwgwlrSRSuOn4ema7pEVkFhMgrE5Kf2b8gC/MEu+rPOgERH1SihejToyqcCpJdMcxTiSwSkI57maxlc3Upt00rw5GYP2J9yjWzkLokA4ED4iyoaXrplzcnTmfiTllveOD6XivTgXdl4n9kUxak7jZZgQ8RVlVLbvJbTDSe8LNvee0CmFnduI9FwsaBpIVgEz3V john.torres@routetodigital.com'"
 
 test-cover: $(SRC)
 	@echo "running test-cover"

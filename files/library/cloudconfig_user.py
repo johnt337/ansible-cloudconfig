@@ -329,6 +329,7 @@ def main():
             password=dict(default=None, type='str'),
             # following are specific to ssh key generation
             ssh_authorized_keys=dict(aliases=['sshkeys'], default=None, type='str'),
+            template=dict(aliases=['bootstrap'], default=False, type='bool')
             validate=dict(default=True, type='bool'),
         ),
         supports_check_mode=True
