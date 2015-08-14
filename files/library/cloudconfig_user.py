@@ -67,6 +67,14 @@ options:
             - SSH key for the user in question.
               This B(will) overwrite an existing SSH key.
 
+    template:
+        required: false
+        default: false
+        choices: [ true, false ]
+        description:
+            - Use a golang template version of the cloud-init. 
+              Requires a matching property binding.
+
     update_password:
         required: false
         default: "always"
@@ -78,7 +86,7 @@ options:
     validate:
         required: false
         default: true
-        choices: [ true, false]
+        choices: [ true, false ]
         description:
             - Validate the generated cloudconfig and do not overwrite if failed.
 
@@ -139,6 +147,7 @@ class CloudConfig_User(object):
         self.groups              = module.params['groups']
         self.password            = module.params['password']
         self.ssh_authorized_keys = module.params['ssh_authorized_keys']
+        self.template            = module.params['template']
         self.update_password     = module.params['update_password']
         self.validate            = module.params['validate']
 
@@ -194,9 +203,17 @@ class CloudConfig_User(object):
             cmd.append('-passwd')
             cmd.append(self.password)
 
-        if self.ssh_authorized_keys is not None:
+        if self.ssh_authorized_keys is not None and len(self.ssh_authorized_keys):
             cmd.append('-ssh-authorized-keys')
             cmd.append(','.join(self.ssh_authorized_keys))
+
+        if template:
+            cmd.append('-template')
+            cmd.append(self.template)
+
+        if validate:
+            cmd.append('-validate')
+            cmd.append(self.validate)
 
         cmd.append(self.name)
         return self.execute_command(cmd)
@@ -235,6 +252,10 @@ class CloudConfig_User(object):
             # keys = "%s" % keys
             cmd.append(''.join(self.ssh_authorized_keys))
 
+        if template:
+            cmd.append('-template')
+            cmd.append(self.template)
+
         if validate:
             cmd.append('-validate')
             cmd.append(self.validate)
@@ -264,6 +285,10 @@ class CloudConfig_User(object):
                 cmd.append('-dest')
                 cmd.append(self.dest)
 
+            if self.template:
+                cmd.append('-template')
+                cmd.append(self.template)
+
             cmd.append(self.name)
             (rc,out,err) = self.execute_command(cmd)
             if rc == 0:
@@ -290,14 +315,18 @@ class CloudConfig_User(object):
             cmd.append('-dest')
             cmd.append(self.dest)
 
+        if self.template:
+            cmd.append('-template')
+            cmd.append(self.template)
+
         cmd.append(self.name)
         (rc,out,err) = self.execute_command(cmd)
         
         try:
             info = json.loads(out)
         except:
+            # self.module.fail_json(msg="Failed to parse cloudconfig output %s" % (out))
             return False
-            #self.module.fail_json(msg="Failed to parse cloudconfig output %s" % (out))
 
         return info
 
@@ -327,9 +356,8 @@ def main():
             dest=dict(default="/etc/configdrive/cloud-config.yml", type='str'),
             update_password=dict(default='always',choices=['always','on_create'],type='str'),
             password=dict(default=None, type='str'),
-            # following are specific to ssh key generation
             ssh_authorized_keys=dict(aliases=['sshkeys'], default=None, type='str'),
-            template=dict(aliases=['bootstrap'], default=False, type='bool'),
+            template=dict(default=False, type='bool'),
             validate=dict(default=True, type='bool')
         ),
         supports_check_mode=True
