@@ -207,13 +207,11 @@ class CloudConfig_User(object):
             cmd.append('-ssh-authorized-keys')
             cmd.append(','.join(self.ssh_authorized_keys))
 
-        if template:
+        if self.template:
             cmd.append('-template')
-            cmd.append(self.template)
 
-        if validate:
+        if self.validate:
             cmd.append('-validate')
-            cmd.append(self.validate)
 
         cmd.append(self.name)
         return self.execute_command(cmd)
@@ -252,13 +250,14 @@ class CloudConfig_User(object):
             # keys = "%s" % keys
             cmd.append(''.join(self.ssh_authorized_keys))
 
-        if template:
+        if self.template:
             cmd.append('-template')
-            cmd.append(self.template)
 
-        if validate:
+        if self.validate:
             cmd.append('-validate')
-            cmd.append(self.validate)
+
+        cmd.append('-format')
+        cmd.append('json')
 
         # skip if no changes to be made
         if len(cmd) == 4:
@@ -268,6 +267,7 @@ class CloudConfig_User(object):
 
         cmd.append(self.name)
         (rc,out,err) = self.execute_command(cmd)
+
         return (rc,out,err)
 
     def user_exists(self):
@@ -287,10 +287,14 @@ class CloudConfig_User(object):
 
             if self.template:
                 cmd.append('-template')
-                cmd.append(self.template)
+
+            cmd.append('-format')
+            cmd.append('json')
 
             cmd.append(self.name)
+
             (rc,out,err) = self.execute_command(cmd)
+
             if rc == 0:
                 return True
             else:
@@ -317,15 +321,19 @@ class CloudConfig_User(object):
 
         if self.template:
             cmd.append('-template')
-            cmd.append(self.template)
+
+        cmd.append('-format')
+        cmd.append("json")
 
         cmd.append(self.name)
         (rc,out,err) = self.execute_command(cmd)
+
         
+        #nobody:x:65534:65534:nobody:/nonexistent:/bin/sh
         try:
             info = json.loads(out)
         except:
-            # self.module.fail_json(msg="Failed to parse cloudconfig output %s" % (out))
+            self.module.fail_json(msg="Failed to parse cloudconfig output %s" % (out))
             return False
 
         return info
@@ -405,6 +413,7 @@ def main():
             if module.check_mode:
                 module.exit_json(changed=True)
             (rc, out, err) = user.modify_user()
+
             if rc == 0 and re.match("ignoring user",out) is not None:
                 result['changed'] = False
             elif rc == 0 and re.match("updating user",out) is not None:
@@ -415,9 +424,9 @@ def main():
 
         # obscure some stuff from the log
         if user.password is not None:
-            result['password'] = '**********'
+            result['password'] = 'NOT_LOGGING_PASSWORD'
         if user.ssh_authorized_keys is not None:
-            result['ssh_authorized_keys'] = '**********'
+            result['ssh_authorized_keys'] = 'NOT_LOGGING_SSH_KEYS'
 
     if rc is None:
         result['changed'] = False
@@ -435,8 +444,13 @@ def main():
         if info == False:
             result['msg'] = "failed to look up user name: %s" % user.name
             result['failed'] = True
-        if user.groups is not None:
-            result['groups'] = user.groups
+
+        groups = info['Message']['Groups']
+        if groups is not None:
+            result['groups'] = groups
+        # print dir(info)
+        # if info["'Groups'"] is not None:
+        #     result['groups'] = info['Groups']
 
     module.exit_json(**result)
 
