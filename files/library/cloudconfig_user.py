@@ -448,9 +448,6 @@ def main():
         groups = info['Message']['Groups']
         if groups is not None:
             result['groups'] = groups
-        # print dir(info)
-        # if info["'Groups'"] is not None:
-        #     result['groups'] = info['Groups']
 
     module.exit_json(**result)
 
