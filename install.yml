@@ -37,9 +37,11 @@
 
     - name: cloudconfig_user install folder
       local_action: file path="{{ ansible_mod_folder }}" mode=0750 state=directory
+      when: local is defined
     
     - name: install cloudconfig_user module
       local_action: copy src="files/library/cloudconfig_user.py" dest="{{ ansible_mod_dest }}" mode=0550
+      when: local is defined
 
     #########################################################################################
     ##
@@ -52,7 +54,7 @@
 
     - name: uninstall ansible module locally
       local_action: file path="{{ansible_mod_folder}}" state=absent
-      when: uninstall is defined
+      when: uninstall is defined and local is defined
 
     - name: uninstall get_build_url.sh
       file: path="/tmp/get_build_url.sh" state=absent
