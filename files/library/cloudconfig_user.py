@@ -67,6 +67,14 @@ options:
             - SSH key for the user in question.
               This B(will) overwrite an existing SSH key.
 
+    template:
+        required: false
+        default: false
+        choices: [ true, false ]
+        description:
+            - Use a golang template version of the cloud-init. 
+              Requires a matching property binding.
+
     update_password:
         required: false
         default: "always"
@@ -78,7 +86,7 @@ options:
     validate:
         required: false
         default: true
-        choices: [ true, false]
+        choices: [ true, false ]
         description:
             - Validate the generated cloudconfig and do not overwrite if failed.
 
@@ -139,6 +147,7 @@ class CloudConfig_User(object):
         self.groups              = module.params['groups']
         self.password            = module.params['password']
         self.ssh_authorized_keys = module.params['ssh_authorized_keys']
+        self.template            = module.params['template']
         self.update_password     = module.params['update_password']
         self.validate            = module.params['validate']
 
@@ -194,9 +203,15 @@ class CloudConfig_User(object):
             cmd.append('-passwd')
             cmd.append(self.password)
 
-        if self.ssh_authorized_keys is not None:
+        if self.ssh_authorized_keys is not None and len(self.ssh_authorized_keys):
             cmd.append('-ssh-authorized-keys')
             cmd.append(','.join(self.ssh_authorized_keys))
+
+        if self.template:
+            cmd.append('-template')
+
+        if self.validate:
+            cmd.append('-validate')
 
         cmd.append(self.name)
         return self.execute_command(cmd)
@@ -235,9 +250,14 @@ class CloudConfig_User(object):
             # keys = "%s" % keys
             cmd.append(''.join(self.ssh_authorized_keys))
 
-        if validate:
+        if self.template:
+            cmd.append('-template')
+
+        if self.validate:
             cmd.append('-validate')
-            cmd.append(self.validate)
+
+        cmd.append('-format')
+        cmd.append('json')
 
         # skip if no changes to be made
         if len(cmd) == 4:
@@ -247,6 +267,7 @@ class CloudConfig_User(object):
 
         cmd.append(self.name)
         (rc,out,err) = self.execute_command(cmd)
+
         return (rc,out,err)
 
     def user_exists(self):
@@ -264,8 +285,16 @@ class CloudConfig_User(object):
                 cmd.append('-dest')
                 cmd.append(self.dest)
 
+            if self.template:
+                cmd.append('-template')
+
+            cmd.append('-format')
+            cmd.append('json')
+
             cmd.append(self.name)
+
             (rc,out,err) = self.execute_command(cmd)
+
             if rc == 0:
                 return True
             else:
@@ -290,14 +319,22 @@ class CloudConfig_User(object):
             cmd.append('-dest')
             cmd.append(self.dest)
 
+        if self.template:
+            cmd.append('-template')
+
+        cmd.append('-format')
+        cmd.append("json")
+
         cmd.append(self.name)
         (rc,out,err) = self.execute_command(cmd)
+
         
+        #nobody:x:65534:65534:nobody:/nonexistent:/bin/sh
         try:
             info = json.loads(out)
         except:
+            self.module.fail_json(msg="Failed to parse cloudconfig output %s" % (out))
             return False
-            #self.module.fail_json(msg="Failed to parse cloudconfig output %s" % (out))
 
         return info
 
@@ -327,9 +364,8 @@ def main():
             dest=dict(default="/etc/configdrive/cloud-config.yml", type='str'),
             update_password=dict(default='always',choices=['always','on_create'],type='str'),
             password=dict(default=None, type='str'),
-            # following are specific to ssh key generation
             ssh_authorized_keys=dict(aliases=['sshkeys'], default=None, type='str'),
-            template=dict(aliases=['bootstrap'], default=False, type='bool'),
+            template=dict(default=False, type='bool'),
             validate=dict(default=True, type='bool')
         ),
         supports_check_mode=True
@@ -377,6 +413,7 @@ def main():
             if module.check_mode:
                 module.exit_json(changed=True)
             (rc, out, err) = user.modify_user()
+
             if rc == 0 and re.match("ignoring user",out) is not None:
                 result['changed'] = False
             elif rc == 0 and re.match("updating user",out) is not None:
@@ -387,9 +424,9 @@ def main():
 
         # obscure some stuff from the log
         if user.password is not None:
-            result['password'] = '**********'
+            result['password'] = 'NOT_LOGGING_PASSWORD'
         if user.ssh_authorized_keys is not None:
-            result['ssh_authorized_keys'] = '**********'
+            result['ssh_authorized_keys'] = 'NOT_LOGGING_SSH_KEYS'
 
     if rc is None:
         result['changed'] = False
@@ -407,8 +444,13 @@ def main():
         if info == False:
             result['msg'] = "failed to look up user name: %s" % user.name
             result['failed'] = True
-        if user.groups is not None:
-            result['groups'] = user.groups
+
+        groups = info['Message']['Groups']
+        if groups is not None:
+            result['groups'] = groups
+        # print dir(info)
+        # if info["'Groups'"] is not None:
+        #     result['groups'] = info['Groups']
 
     module.exit_json(**result)
 

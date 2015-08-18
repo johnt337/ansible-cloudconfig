@@ -119,7 +119,7 @@ alias ansible-test-module='~/gitroot/ansible/hacking/test-module'
 
 ```
 
-ansible-test-module -m ./files/library/cloudconfig_user.py -a "name=test password=foobar groups=johnt,test,one ssh_authorized_keys=barfoo"
+ansible-test-module -m ./files/library/cloudconfig_user.py -a "state='present' name='test' password='notyomamaandthatsnotmybaby' groups=docker,wheel,sudo ssh_authorized_keys='ssh-rsa AAAAAAAA$%_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA pants@me.com' src='/go/src/github.com/johnt337/cloudconfig/templates/cloud-config-template.yml' template='True'"
 
 ```
 
